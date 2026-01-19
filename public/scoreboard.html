@@ -1,0 +1,689 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>BP TRACKER TERMINAL</title>
+  <link rel="stylesheet" href="/css/style.css">
+  <style>
+    :root {
+      --terminal-bg: #0a0a0a;
+      --terminal-green: #00ff41;
+      --terminal-amber: #ffb000;
+      --terminal-red: #ff3333;
+      --terminal-blue: #00bfff;
+      --terminal-dim: #666666;
+      --terminal-border: #333333;
+    }
+
+    body.terminal-mode {
+      background: var(--terminal-bg);
+      color: var(--terminal-green);
+      font-family: 'Courier New', 'Monaco', 'Consolas', monospace;
+    }
+
+    .terminal-nav {
+      background: #111;
+      border-bottom: 1px solid var(--terminal-border);
+      padding: 0.5rem 1rem;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .terminal-nav .nav-brand {
+      color: var(--terminal-amber);
+      font-weight: bold;
+      font-size: 1rem;
+    }
+
+    .terminal-nav .nav-menu {
+      display: flex;
+      gap: 1rem;
+    }
+
+    .terminal-nav .nav-menu a {
+      color: var(--terminal-green);
+      text-decoration: none;
+      padding: 0.25rem 0.5rem;
+      font-size: 0.85rem;
+    }
+
+    .terminal-nav .nav-menu a:hover,
+    .terminal-nav .nav-menu a.active {
+      background: var(--terminal-green);
+      color: var(--terminal-bg);
+    }
+
+    .terminal-container {
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 1rem;
+    }
+
+    .terminal-header {
+      text-align: center;
+      padding: 1rem 0;
+      border-bottom: 2px solid var(--terminal-amber);
+      margin-bottom: 1rem;
+    }
+
+    .terminal-header h1 {
+      color: var(--terminal-amber);
+      font-size: 1.5rem;
+      margin: 0;
+      letter-spacing: 2px;
+    }
+
+    .terminal-header .timestamp {
+      color: var(--terminal-dim);
+      font-size: 0.8rem;
+      margin-top: 0.5rem;
+    }
+
+    .ticker-bar {
+      background: #111;
+      border: 1px solid var(--terminal-border);
+      padding: 0.5rem 1rem;
+      margin-bottom: 1rem;
+      overflow: hidden;
+      white-space: nowrap;
+    }
+
+    .ticker-content {
+      display: inline-block;
+      animation: ticker 20s linear infinite;
+    }
+
+    @keyframes ticker {
+      0% { transform: translateX(100%); }
+      100% { transform: translateX(-100%); }
+    }
+
+    .ticker-item {
+      display: inline;
+      margin-right: 3rem;
+    }
+
+    .ticker-item .symbol {
+      color: var(--terminal-amber);
+    }
+
+    .ticker-item .up {
+      color: var(--terminal-green);
+    }
+
+    .ticker-item .down {
+      color: var(--terminal-red);
+    }
+
+    .grid-layout {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 1rem;
+    }
+
+    @media (max-width: 900px) {
+      .grid-layout {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    .terminal-panel {
+      background: #111;
+      border: 1px solid var(--terminal-border);
+      padding: 1rem;
+    }
+
+    .panel-header {
+      color: var(--terminal-amber);
+      font-size: 0.85rem;
+      border-bottom: 1px solid var(--terminal-border);
+      padding-bottom: 0.5rem;
+      margin-bottom: 1rem;
+      display: flex;
+      justify-content: space-between;
+    }
+
+    .panel-header .live-indicator {
+      color: var(--terminal-green);
+      animation: blink 1s infinite;
+    }
+
+    @keyframes blink {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0.3; }
+    }
+
+    /* BP Stats Panel */
+    .bp-stats {
+      grid-column: 1 / -1;
+    }
+
+    .big-number {
+      font-size: 4rem;
+      color: var(--terminal-green);
+      text-align: center;
+      line-height: 1;
+    }
+
+    .big-number.warning {
+      color: var(--terminal-amber);
+    }
+
+    .big-number-label {
+      text-align: center;
+      color: var(--terminal-dim);
+      font-size: 0.9rem;
+      margin-top: 0.5rem;
+    }
+
+    .stats-row {
+      display: flex;
+      justify-content: space-around;
+      margin-top: 1.5rem;
+      padding-top: 1rem;
+      border-top: 1px solid var(--terminal-border);
+    }
+
+    .stat-item {
+      text-align: center;
+    }
+
+    .stat-value {
+      font-size: 1.5rem;
+      color: var(--terminal-blue);
+    }
+
+    .stat-label {
+      color: var(--terminal-dim);
+      font-size: 0.75rem;
+      margin-top: 0.25rem;
+    }
+
+    /* Memorial Panel */
+    .memorial-panel {
+      border-color: var(--terminal-red);
+    }
+
+    .memorial-panel .panel-header {
+      color: var(--terminal-red);
+    }
+
+    .tombstone {
+      text-align: center;
+      padding: 1rem;
+      color: var(--terminal-dim);
+    }
+
+    .tombstone-graphic {
+      font-size: 0.7rem;
+      line-height: 1.2;
+      margin-bottom: 1rem;
+      color: var(--terminal-dim);
+    }
+
+    .tombstone h3 {
+      color: var(--terminal-red);
+      margin: 0.5rem 0;
+      font-size: 1.1rem;
+    }
+
+    .tombstone .aka {
+      color: var(--terminal-dim);
+      font-size: 0.85rem;
+      font-style: italic;
+    }
+
+    .tombstone .dates {
+      color: var(--terminal-amber);
+      margin: 0.5rem 0;
+      font-size: 0.9rem;
+    }
+
+    .tombstone .epitaph {
+      color: var(--terminal-dim);
+      font-size: 0.8rem;
+      margin-top: 1rem;
+      font-style: italic;
+    }
+
+    /* Bet Status Panel */
+    .bet-panel .countdown {
+      font-size: 2rem;
+      text-align: center;
+      color: var(--terminal-amber);
+      margin: 1rem 0;
+    }
+
+    .bet-panel .countdown.active {
+      color: var(--terminal-green);
+    }
+
+    .bet-rules {
+      font-size: 0.8rem;
+      color: var(--terminal-dim);
+      line-height: 1.6;
+    }
+
+    .bet-rules li {
+      margin-bottom: 0.5rem;
+    }
+
+    .bet-rules .highlight {
+      color: var(--terminal-green);
+    }
+
+    .bet-rules .warning {
+      color: var(--terminal-amber);
+    }
+
+    /* Trash Talk Panel */
+    .trash-talk {
+      grid-column: 1 / -1;
+    }
+
+    .message-log {
+      max-height: 200px;
+      overflow-y: auto;
+    }
+
+    .log-entry {
+      padding: 0.5rem 0;
+      border-bottom: 1px solid var(--terminal-border);
+      font-size: 0.85rem;
+    }
+
+    .log-entry:last-child {
+      border-bottom: none;
+    }
+
+    .log-entry .log-date {
+      color: var(--terminal-dim);
+      margin-right: 1rem;
+    }
+
+    .log-entry .log-message {
+      color: var(--terminal-green);
+    }
+
+    .log-entry.milestone .log-message {
+      color: var(--terminal-amber);
+    }
+
+    /* Footer */
+    .terminal-footer {
+      text-align: center;
+      padding: 1rem;
+      color: var(--terminal-dim);
+      font-size: 0.75rem;
+      border-top: 1px solid var(--terminal-border);
+      margin-top: 1rem;
+    }
+
+    .terminal-footer a {
+      color: var(--terminal-blue);
+      text-decoration: none;
+    }
+  </style>
+</head>
+<body class="terminal-mode">
+  <nav class="terminal-nav">
+    <div class="nav-brand">BP TRACKER TERMINAL v1.0</div>
+    <ul class="nav-menu">
+      <li><a href="/">HOME</a></li>
+      <li><a href="/feeding.html">FEEDING</a></li>
+      <li><a href="/live.html">LIVE</a></li>
+      <li><a href="/scoreboard.html" class="active">SCOREBOARD</a></li>
+    </ul>
+  </nav>
+
+  <div class="terminal-container">
+    <header class="terminal-header">
+      <h1>>>> THE GREAT FISH WAGER OF 2025 <<<</h1>
+      <div class="timestamp" id="currentTime"></div>
+    </header>
+
+    <div class="ticker-bar">
+      <div class="ticker-content" id="ticker">
+        <span class="ticker-item"><span class="symbol">BP</span> <span class="up" id="tickerDays">+0 DAYS</span></span>
+        <span class="ticker-item"><span class="symbol">DIVVY</span> <span class="down">DELISTED (9 DAYS)</span></span>
+        <span class="ticker-item"><span class="symbol">LAIR</span> <span class="down">POSITION: UNDERWATER</span></span>
+        <span class="ticker-item"><span class="symbol">VP</span> <span class="up">OUTLOOK: BULLISH</span></span>
+        <span class="ticker-item"><span class="symbol">ANALYSTS</span> <span class="down">TRACK RECORD: POOR</span></span>
+      </div>
+    </div>
+
+    <div class="grid-layout">
+      <!-- BP Stats - Full Width -->
+      <div class="terminal-panel bp-stats">
+        <div class="panel-header">
+          <span>BP SURVIVAL METRICS</span>
+          <span class="live-indicator">● LIVE</span>
+        </div>
+        <div class="big-number" id="daysAlive">0</div>
+        <div class="big-number-label">DAYS ALIVE</div>
+        <div class="stats-row">
+          <div class="stat-item">
+            <div class="stat-value" id="hoursAlive">0</div>
+            <div class="stat-label">HOURS</div>
+          </div>
+          <div class="stat-item">
+            <div class="stat-value" id="divvyComparison">+0</div>
+            <div class="stat-label">VS DIVVY RECORD</div>
+          </div>
+          <div class="stat-item">
+            <div class="stat-value" id="basisPoints">0</div>
+            <div class="stat-label">BASIS POINTS OF YEAR</div>
+          </div>
+          <div class="stat-item">
+            <div class="stat-value" id="survivalRate">0%</div>
+            <div class="stat-label">OF YEAR SURVIVED</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Memorial Panel -->
+      <div class="terminal-panel memorial-panel">
+        <div class="panel-header">
+          <span>IN MEMORIAM</span>
+          <span>THE LAIR'S FIRST ATTEMPT</span>
+        </div>
+        <div class="tombstone">
+          <pre class="tombstone-graphic">
+    .---.
+   /     \
+  |  RIP  |
+  |       |
+  |       |
+ _|       |_
+|___________|
+          </pre>
+          <h3>DIVIDEND RECAP</h3>
+          <div class="aka">"Divvy"</div>
+          <div class="dates">??? - ??? 2024</div>
+          <div class="dates" style="color: var(--terminal-red);">LIFESPAN: 9 DAYS</div>
+          <div class="epitaph">"Gone but not forgotten.<br>A lesson in due diligence."</div>
+        </div>
+      </div>
+
+      <!-- Bet Status Panel -->
+      <div class="terminal-panel bet-panel">
+        <div class="panel-header">
+          <span>WAGER STATUS</span>
+          <span id="betStatus">PENDING</span>
+        </div>
+        <div class="countdown" id="countdown">
+          LOADING...
+        </div>
+        <ul class="bet-rules">
+          <li><span class="highlight">PARTICIPANTS:</span> VP (bp) vs The Lair (TBD)</li>
+          <li><span class="highlight">START DATE:</span> January 26, 2025</li>
+          <li><span class="highlight">LOSS CONDITION:</span> First fish to die loses</li>
+          <li><span class="warning">LAIR ADVANTAGE:</span> If both survive to 2026, The Lair wins</li>
+          <li><span class="highlight">CURRENT LAIR STATUS:</span> <span id="lairStatus">Scrambling to acquire fish</span></li>
+        </ul>
+      </div>
+
+      <!-- Trash Talk / Commentary -->
+      <div class="terminal-panel trash-talk">
+        <div class="panel-header">
+          <span>MARKET COMMENTARY</span>
+          <span>AUTO-GENERATED ANALYSIS</span>
+        </div>
+        <div class="message-log" id="messageLog">
+          <!-- Generated by JS -->
+        </div>
+      </div>
+    </div>
+
+    <footer class="terminal-footer">
+      <p>BP TRACKER TERMINAL | Data updates in real-time | <a href="/snapshot.html">ADMIN ACCESS</a></p>
+      <p>Remember: Past performance of analysts' fish care is not indicative of future results</p>
+    </footer>
+  </div>
+
+  <script>
+    // Key dates
+    const BP_BIRTHDAY = new Date('2025-01-17T12:00:00');
+    const BET_START = new Date('2025-01-26T00:00:00');
+    const YEAR_END = new Date('2026-01-01T00:00:00');
+    const DIVVY_LIFESPAN = 9; // days
+
+    // Update current time
+    function updateTime() {
+      const now = new Date();
+      document.getElementById('currentTime').textContent =
+        now.toLocaleString('en-US', {
+          weekday: 'short',
+          year: 'numeric',
+          month: 'short',
+          day: 'numeric',
+          hour: '2-digit',
+          minute: '2-digit',
+          second: '2-digit',
+          hour12: false
+        }).toUpperCase();
+    }
+
+    // Calculate BP stats
+    function updateStats() {
+      const now = new Date();
+      const msAlive = now - BP_BIRTHDAY;
+      const daysAlive = msAlive / (1000 * 60 * 60 * 24);
+      const hoursAlive = msAlive / (1000 * 60 * 60);
+
+      // Days alive (floor for display)
+      const daysDisplay = Math.floor(daysAlive);
+      document.getElementById('daysAlive').textContent = daysDisplay;
+      document.getElementById('hoursAlive').textContent = Math.floor(hoursAlive);
+
+      // Comparison to Divvy
+      const vsDivvy = daysDisplay - DIVVY_LIFESPAN;
+      const comparison = document.getElementById('divvyComparison');
+      if (vsDivvy >= 0) {
+        comparison.textContent = `+${vsDivvy}`;
+        comparison.style.color = '#00ff41';
+      } else {
+        comparison.textContent = `${vsDivvy}`;
+        comparison.style.color = '#ffb000';
+      }
+
+      // Basis points of year (1 year = 10000 bps)
+      const yearProgress = daysAlive / 365;
+      const bps = Math.floor(yearProgress * 10000);
+      document.getElementById('basisPoints').textContent = bps.toLocaleString();
+
+      // Survival rate
+      const survivalRate = (yearProgress * 100).toFixed(2);
+      document.getElementById('survivalRate').textContent = survivalRate + '%';
+
+      // Ticker
+      document.getElementById('tickerDays').textContent = `+${daysDisplay} DAYS`;
+    }
+
+    // Update countdown
+    function updateCountdown() {
+      const now = new Date();
+      const betStatus = document.getElementById('betStatus');
+      const countdown = document.getElementById('countdown');
+      const lairStatus = document.getElementById('lairStatus');
+
+      if (now < BET_START) {
+        // Before bet starts
+        const msUntilBet = BET_START - now;
+        const daysUntil = Math.floor(msUntilBet / (1000 * 60 * 60 * 24));
+        const hoursUntil = Math.floor((msUntilBet % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+
+        betStatus.textContent = 'PENDING';
+        betStatus.style.color = '#ffb000';
+        countdown.textContent = `T-${daysUntil}D ${hoursUntil}H`;
+        countdown.classList.remove('active');
+        lairStatus.textContent = 'Scrambling to acquire fish';
+      } else {
+        // Bet is active
+        const msIntoBet = now - BET_START;
+        const daysIntoBet = Math.floor(msIntoBet / (1000 * 60 * 60 * 24));
+
+        betStatus.textContent = 'ACTIVE';
+        betStatus.style.color = '#00ff41';
+        countdown.textContent = `DAY ${daysIntoBet + 1} OF WAGER`;
+        countdown.classList.add('active');
+        lairStatus.textContent = 'Fish status unknown';
+      }
+    }
+
+    // Generate trash talk messages
+    function generateMessages() {
+      const now = new Date();
+      const daysAlive = Math.floor((now - BP_BIRTHDAY) / (1000 * 60 * 60 * 24));
+      const messages = [];
+
+      // Always show these
+      messages.push({
+        date: 'HISTORICAL',
+        message: 'The Lair\'s "Dividend Recap" achieved a 9-day lifespan. Analysts called it "impressive for them."',
+        milestone: false
+      });
+
+      messages.push({
+        date: formatDate(BP_BIRTHDAY),
+        message: 'BP (Basis Point) acquired. VP enters the fish care market with strong conviction.',
+        milestone: true
+      });
+
+      // Milestone messages based on days alive
+      if (daysAlive >= 1) {
+        messages.push({
+          date: formatDate(new Date(BP_BIRTHDAY.getTime() + 1 * 24 * 60 * 60 * 1000)),
+          message: 'Day 1 complete. BP showing early signs of competent ownership.',
+          milestone: false
+        });
+      }
+
+      if (daysAlive >= 3) {
+        messages.push({
+          date: formatDate(new Date(BP_BIRTHDAY.getTime() + 3 * 24 * 60 * 60 * 1000)),
+          message: 'BP reaches Day 3. Already 33% of Divvy\'s total lifespan.',
+          milestone: false
+        });
+      }
+
+      if (daysAlive >= 5) {
+        messages.push({
+          date: formatDate(new Date(BP_BIRTHDAY.getTime() + 5 * 24 * 60 * 60 * 1000)),
+          message: 'Halfway to Divvy\'s record. Analysts reportedly "concerned."',
+          milestone: false
+        });
+      }
+
+      if (daysAlive >= 9) {
+        messages.push({
+          date: formatDate(new Date(BP_BIRTHDAY.getTime() + 9 * 24 * 60 * 60 * 1000)),
+          message: '>>> BP MATCHES DIVVY\'S LIFESPAN. THE BAR HAS BEEN MET. <<<',
+          milestone: true
+        });
+      }
+
+      if (daysAlive >= 10) {
+        messages.push({
+          date: formatDate(new Date(BP_BIRTHDAY.getTime() + 10 * 24 * 60 * 60 * 1000)),
+          message: 'BP officially outperforming The Lair\'s historical benchmark. Analysts in shambles.',
+          milestone: true
+        });
+      }
+
+      if (daysAlive >= 14) {
+        messages.push({
+          date: formatDate(new Date(BP_BIRTHDAY.getTime() + 14 * 24 * 60 * 60 * 1000)),
+          message: 'Two weeks. BP\'s Sharpe ratio looking exceptional vs analyst benchmark.',
+          milestone: false
+        });
+      }
+
+      if (daysAlive >= 30) {
+        messages.push({
+          date: formatDate(new Date(BP_BIRTHDAY.getTime() + 30 * 24 * 60 * 60 * 1000)),
+          message: 'ONE MONTH MILESTONE. BP delivers 3.3x return on Divvy benchmark.',
+          milestone: true
+        });
+      }
+
+      if (daysAlive >= 60) {
+        messages.push({
+          date: formatDate(new Date(BP_BIRTHDAY.getTime() + 60 * 24 * 60 * 60 * 1000)),
+          message: 'Two months. Sources say analysts considering switching to houseplants.',
+          milestone: false
+        });
+      }
+
+      if (daysAlive >= 90) {
+        messages.push({
+          date: formatDate(new Date(BP_BIRTHDAY.getTime() + 90 * 24 * 60 * 60 * 1000)),
+          message: 'Q1 COMPLETE. BP showing consistent YoY growth in days-alive metric.',
+          milestone: true
+        });
+      }
+
+      if (daysAlive >= 100) {
+        messages.push({
+          date: formatDate(new Date(BP_BIRTHDAY.getTime() + 100 * 24 * 60 * 60 * 1000)),
+          message: '>>> 100 DAYS. BP ACHIEVES 11x MULTIPLE ON LAIR BENCHMARK. <<<',
+          milestone: true
+        });
+      }
+
+      if (daysAlive >= 180) {
+        messages.push({
+          date: formatDate(new Date(BP_BIRTHDAY.getTime() + 180 * 24 * 60 * 60 * 1000)),
+          message: 'HALF YEAR MILESTONE. BP demonstrates sustainable long-term fish care alpha.',
+          milestone: true
+        });
+      }
+
+      if (daysAlive >= 270) {
+        messages.push({
+          date: formatDate(new Date(BP_BIRTHDAY.getTime() + 270 * 24 * 60 * 60 * 1000)),
+          message: 'Nine months. BP now a tenured member of the household. Analysts sweating.',
+          milestone: false
+        });
+      }
+
+      if (daysAlive >= 365) {
+        messages.push({
+          date: formatDate(new Date(BP_BIRTHDAY.getTime() + 365 * 24 * 60 * 60 * 1000)),
+          message: '>>> ONE YEAR. BP HAS ACHIEVED WHAT THE LAIR COULD NEVER. <<<',
+          milestone: true
+        });
+      }
+
+      // Render messages (most recent first)
+      const log = document.getElementById('messageLog');
+      log.innerHTML = messages.reverse().map(m => `
+        <div class="log-entry ${m.milestone ? 'milestone' : ''}">
+          <span class="log-date">[${m.date}]</span>
+          <span class="log-message">${m.message}</span>
+        </div>
+      `).join('');
+    }
+
+    function formatDate(date) {
+      return date.toLocaleDateString('en-US', {
+        month: 'short',
+        day: 'numeric'
+      }).toUpperCase();
+    }
+
+    // Initialize
+    updateTime();
+    updateStats();
+    updateCountdown();
+    generateMessages();
+
+    // Update every second
+    setInterval(updateTime, 1000);
+    setInterval(updateStats, 1000);
+    setInterval(updateCountdown, 1000);
+  </script>
+</body>
+</html>
