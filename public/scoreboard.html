@@ -340,7 +340,7 @@
 
   <div class="terminal-container">
     <header class="terminal-header">
-      <h1>>>> THE GREAT FISH WAGER OF 2025 <<<</h1>
+      <h1>>>> THE GREAT FISH CONTEST OF 2026 <<<</h1>
       <div class="timestamp" id="currentTime"></div>
     </header>
 
@@ -410,7 +410,7 @@
       <!-- Bet Status Panel -->
       <div class="terminal-panel bet-panel">
         <div class="panel-header">
-          <span>WAGER STATUS</span>
+          <span>CONTEST STATUS</span>
           <span id="betStatus">PENDING</span>
         </div>
         <div class="countdown" id="countdown">
@@ -418,7 +418,7 @@
         </div>
         <ul class="bet-rules">
           <li><span class="highlight">PARTICIPANTS:</span> VP (bp) vs The Lair (TBD)</li>
-          <li><span class="highlight">START DATE:</span> January 26, 2025</li>
+          <li><span class="highlight">START DATE:</span> January 26, 2026</li>
           <li><span class="highlight">LOSS CONDITION:</span> First fish to die loses</li>
           <li><span class="warning">LAIR ADVANTAGE:</span> If both survive to 2026, The Lair wins</li>
           <li><span class="highlight">CURRENT LAIR STATUS:</span> <span id="lairStatus">Scrambling to acquire fish</span></li>
@@ -445,9 +445,9 @@
 
   <script>
     // Key dates
-    const BP_BIRTHDAY = new Date('2025-01-17T12:00:00');
-    const BET_START = new Date('2025-01-26T00:00:00');
-    const YEAR_END = new Date('2026-01-01T00:00:00');
+    const BP_BIRTHDAY = new Date('2026-01-17T12:00:00');
+    const BET_START = new Date('2026-01-26T00:00:00');
+    const YEAR_END = new Date('2027-01-01T00:00:00');
     const DIVVY_LIFESPAN = 9; // days
 
     // Update current time
@@ -527,7 +527,7 @@
 
         betStatus.textContent = 'ACTIVE';
         betStatus.style.color = '#00ff41';
-        countdown.textContent = `DAY ${daysIntoBet + 1} OF WAGER`;
+        countdown.textContent = `DAY ${daysIntoBet + 1} OF CONTEST`;
         countdown.classList.add('active');
         lairStatus.textContent = 'Fish status unknown';
       }
