@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>bp Tracker - Feeding Log</title>
+  <link rel="stylesheet" href="/css/style.css">
+</head>
+<body>
+  <nav class="navbar">
+    <div class="nav-brand">bp Tracker</div>
+    <ul class="nav-menu">
+      <li><a href="/">Home</a></li>
+      <li><a href="/feeding.html" class="active">Feeding Log</a></li>
+    </ul>
+  </nav>
+
+  <main class="container">
+    <section class="page-header">
+      <h1>Feeding Log</h1>
+      <p>Track bp's feeding schedule to keep him healthy</p>
+    </section>
+
+    <section class="feeding-status">
+      <div class="last-fed-card" id="lastFedCard">
+        <h2>Last Fed</h2>
+        <div class="last-fed-time" id="lastFedTime">Never recorded</div>
+        <div class="time-ago" id="timeAgo"></div>
+        <div class="feeding-indicator" id="feedingIndicator"></div>
+      </div>
+
+      <div class="feed-form">
+        <input type="password" id="passwordInput" class="password-input" placeholder="Enter password">
+        <button class="btn btn-large feed-btn" id="feedBtn">
+          🐟 I Just Fed bp!
+        </button>
+        <button class="btn btn-secondary undo-btn" id="undoBtn" style="display: none;">
+          Undo Last Feeding
+        </button>
+      </div>
+    </section>
+
+    <section class="feeding-history">
+      <h2>Feeding History</h2>
+      <div class="history-list" id="historyList">
+        <p class="no-history">No feeding history yet</p>
+      </div>
+      <button class="btn btn-secondary" id="clearHistoryBtn">Clear History</button>
+    </section>
+
+    <section class="feeding-tips">
+      <h2>Feeding Tips for Betta Fish</h2>
+      <ul>
+        <li>Feed 2-3 pellets, 1-2 times per day</li>
+        <li>Bettas have small stomachs (about the size of their eye)</li>
+        <li>Skip feeding one day per week to prevent bloating</li>
+        <li>Remove uneaten food after 2 minutes</li>
+      </ul>
+    </section>
+  </main>
+
+  <footer>
+    <p>bp Tracker - Keeping Bippy happy and healthy</p>
+  </footer>
+
+  <script src="/js/feeding.js"></script>
+</body>
+</html>

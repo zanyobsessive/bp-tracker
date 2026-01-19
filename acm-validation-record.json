@@ -1,0 +1,17 @@
+{
+  "Changes": [
+    {
+      "Action": "UPSERT",
+      "ResourceRecordSet": {
+        "Name": "_84af9bfea7034ec6583dd8c6411ef15d.zanestiles.com.",
+        "Type": "CNAME",
+        "TTL": 300,
+        "ResourceRecords": [
+          {
+            "Value": "_26cbfb86f568a6f90cf596d6e06ccf13.dlgthlwgnp.acm-validations.aws."
+          }
+        ]
+      }
+    }
+  ]
+}

@@ -1,0 +1,16 @@
+{
+  "name": "bp-tracker",
+  "version": "1.0.0",
+  "description": "A tracker and journal for bp the betta fish",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js",
+    "dev": "node server.js"
+  },
+  "keywords": ["betta", "fish", "tracker"],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "express": "^4.18.2"
+  }
+}
