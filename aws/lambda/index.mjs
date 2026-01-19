@@ -21,7 +21,14 @@ const headers = {
 
 export const handler = async (event) => {
   const method = event.httpMethod || event.requestContext?.http?.method;
-  const path = event.path || event.rawPath;
+  // Use routeKey for HTTP API v2, which doesn't include the stage
+  const routeKey = event.routeKey;
+  // Fallback path handling - strip stage prefix if present
+  let path = event.path || event.rawPath || '';
+  const stage = event.requestContext?.stage;
+  if (stage && path.startsWith(`/${stage}`)) {
+    path = path.slice(stage.length + 1) || '/';
+  }
 
   try {
     // Handle CORS preflight
@@ -30,24 +37,24 @@ export const handler = async (event) => {
     }
 
     // GET /feeding - Get all feeding history
-    if (method === 'GET' && path === '/feeding') {
+    if (routeKey === 'GET /feeding' || (method === 'GET' && path === '/feeding')) {
       return await getFeedings();
     }
 
     // POST /feeding - Add a new feeding
-    if (method === 'POST' && path === '/feeding') {
+    if (routeKey === 'POST /feeding' || (method === 'POST' && path === '/feeding')) {
       const body = JSON.parse(event.body || '{}');
       return await addFeeding(body);
     }
 
     // DELETE /feeding/{id} - Delete a specific feeding (undo)
-    if (method === 'DELETE' && path.startsWith('/feeding/')) {
-      const id = path.split('/').pop();
+    if (routeKey === 'DELETE /feeding/{id}' || (method === 'DELETE' && path.startsWith('/feeding/') && path !== '/feeding')) {
+      const id = path.split('/').pop() || event.pathParameters?.id;
       return await deleteFeeding(id);
     }
 
     // DELETE /feeding - Clear all history
-    if (method === 'DELETE' && path === '/feeding') {
+    if (routeKey === 'DELETE /feeding' || (method === 'DELETE' && path === '/feeding')) {
       return await clearAllFeedings();
     }
 
