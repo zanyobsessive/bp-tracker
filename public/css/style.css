@@ -448,6 +448,7 @@ footer {
   }
 
   .nav-menu a {
+    display: block;
     padding: 0.3rem 0.5rem;
     font-size: 0.8rem;
     text-align: center;
@@ -477,14 +478,22 @@ footer {
 
   .nav-menu {
     gap: 0.3rem;
+    width: 100%;
+    justify-content: center;
+  }
+
+  .nav-menu li {
+    display: block;
   }
 
   .nav-menu a {
-    padding: 0.4rem 0.6rem;
+    display: block;
+    padding: 0.5rem 0.8rem;
     font-size: 0.75rem;
     text-align: center;
     border: 1px solid rgba(255, 255, 255, 0.4);
     border-radius: 4px;
+    min-width: 70px;
   }
 
   .nav-menu a:hover,
