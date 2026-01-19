@@ -245,7 +245,7 @@ async function getSnapshotMeta() {
         timestamp: timestamp,
         lastModified: headResult.LastModified?.toISOString(),
         size: headResult.ContentLength,
-        url: `https://${SNAPSHOT_BUCKET}.s3.amazonaws.com/${SNAPSHOT_KEY}`,
+        url: `https://s3.us-east-1.amazonaws.com/${SNAPSHOT_BUCKET}/${SNAPSHOT_KEY}`,
       }),
     };
   } catch (error) {
