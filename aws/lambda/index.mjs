@@ -5,11 +5,22 @@ import {
   PutCommand,
   DeleteCommand,
 } from '@aws-sdk/lib-dynamodb';
+import {
+  S3Client,
+  PutObjectCommand,
+  DeleteObjectCommand,
+  HeadObjectCommand,
+} from '@aws-sdk/client-s3';
+import { getSignedUrl } from '@aws-sdk/s3-request-presigner';
 
-const client = new DynamoDBClient({});
-const docClient = DynamoDBDocumentClient.from(client);
+const dynamoClient = new DynamoDBClient({});
+const docClient = DynamoDBDocumentClient.from(dynamoClient);
+const s3Client = new S3Client({});
 
 const TABLE_NAME = process.env.TABLE_NAME || 'bp-feeding-history';
+const SNAPSHOT_BUCKET = process.env.SNAPSHOT_BUCKET || 'zanestiles.com';
+const SNAPSHOT_KEY = 'snapshots/current.jpg';
+const SNAPSHOT_META_KEY = 'snapshots/meta.json';
 const PARTITION_KEY = 'FEEDING_LOG'; // Single partition for all feeding records
 
 const headers = {
@@ -56,6 +67,27 @@ export const handler = async (event) => {
     // DELETE /feeding - Clear all history
     if (routeKey === 'DELETE /feeding' || (method === 'DELETE' && path === '/feeding')) {
       return await clearAllFeedings();
+    }
+
+    // GET /snapshot/upload-url - Get presigned URL for uploading snapshot
+    if (routeKey === 'GET /snapshot/upload-url' || (method === 'GET' && path === '/snapshot/upload-url')) {
+      return await getSnapshotUploadUrl();
+    }
+
+    // GET /snapshot/meta - Get snapshot metadata
+    if (routeKey === 'GET /snapshot/meta' || (method === 'GET' && path === '/snapshot/meta')) {
+      return await getSnapshotMeta();
+    }
+
+    // DELETE /snapshot - Delete current snapshot
+    if (routeKey === 'DELETE /snapshot' || (method === 'DELETE' && path === '/snapshot')) {
+      return await deleteSnapshot();
+    }
+
+    // POST /snapshot/meta - Update snapshot metadata (timestamp)
+    if (routeKey === 'POST /snapshot/meta' || (method === 'POST' && path === '/snapshot/meta')) {
+      const body = JSON.parse(event.body || '{}');
+      return await updateSnapshotMeta(body);
     }
 
     return {
@@ -171,5 +203,90 @@ async function clearAllFeedings() {
     statusCode: 200,
     headers,
     body: JSON.stringify({ cleared: true }),
+  };
+}
+
+// Snapshot functions
+
+async function getSnapshotUploadUrl() {
+  const command = new PutObjectCommand({
+    Bucket: SNAPSHOT_BUCKET,
+    Key: SNAPSHOT_KEY,
+    ContentType: 'image/jpeg',
+  });
+
+  const uploadUrl = await getSignedUrl(s3Client, command, { expiresIn: 300 });
+
+  return {
+    statusCode: 200,
+    headers,
+    body: JSON.stringify({ uploadUrl, key: SNAPSHOT_KEY }),
+  };
+}
+
+async function getSnapshotMeta() {
+  try {
+    // Try to get the image metadata
+    const headCommand = new HeadObjectCommand({
+      Bucket: SNAPSHOT_BUCKET,
+      Key: SNAPSHOT_KEY,
+    });
+
+    const headResult = await s3Client.send(headCommand);
+
+    // Get custom metadata or use LastModified
+    const timestamp = headResult.Metadata?.timestamp || headResult.LastModified?.toISOString();
+
+    return {
+      statusCode: 200,
+      headers,
+      body: JSON.stringify({
+        exists: true,
+        timestamp: timestamp,
+        lastModified: headResult.LastModified?.toISOString(),
+        size: headResult.ContentLength,
+        url: `https://${SNAPSHOT_BUCKET}.s3.amazonaws.com/${SNAPSHOT_KEY}`,
+      }),
+    };
+  } catch (error) {
+    // Handle both 404 (not found) and 403 (access denied for non-existent key)
+    const httpStatus = error.$metadata?.httpStatusCode;
+    if (error.name === 'NotFound' || httpStatus === 404 || httpStatus === 403) {
+      return {
+        statusCode: 200,
+        headers,
+        body: JSON.stringify({
+          exists: false,
+          timestamp: null,
+          url: null,
+        }),
+      };
+    }
+    throw error;
+  }
+}
+
+async function deleteSnapshot() {
+  const deleteImage = new DeleteObjectCommand({
+    Bucket: SNAPSHOT_BUCKET,
+    Key: SNAPSHOT_KEY,
+  });
+
+  await s3Client.send(deleteImage);
+
+  return {
+    statusCode: 200,
+    headers,
+    body: JSON.stringify({ deleted: true }),
+  };
+}
+
+async function updateSnapshotMeta(body) {
+  // This updates the metadata by copying the object to itself with new metadata
+  // For simplicity, we'll just return success - the upload itself sets LastModified
+  return {
+    statusCode: 200,
+    headers,
+    body: JSON.stringify({ updated: true, timestamp: body.timestamp }),
   };
 }

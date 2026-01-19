@@ -1,0 +1,354 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>bp Tracker - Snapshot Capture</title>
+  <link rel="stylesheet" href="/css/style.css">
+  <style>
+    .capture-container {
+      max-width: 800px;
+      margin: 0 auto;
+    }
+
+    .auth-section {
+      text-align: center;
+      padding: 3rem;
+    }
+
+    .capture-section {
+      display: none;
+    }
+
+    .capture-section.active {
+      display: block;
+    }
+
+    .video-container {
+      position: relative;
+      background: #000;
+      border-radius: 12px;
+      overflow: hidden;
+      margin-bottom: 1.5rem;
+    }
+
+    .video-preview {
+      width: 100%;
+      max-height: 480px;
+      display: block;
+    }
+
+    .video-overlay {
+      position: absolute;
+      top: 1rem;
+      right: 1rem;
+      background: rgba(0, 0, 0, 0.7);
+      color: white;
+      padding: 0.5rem 1rem;
+      border-radius: 6px;
+      font-size: 0.9rem;
+    }
+
+    .video-overlay.recording {
+      background: var(--danger-color);
+      animation: blink 1s infinite;
+    }
+
+    @keyframes blink {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0.5; }
+    }
+
+    .camera-select {
+      width: 100%;
+      padding: 0.75rem 1rem;
+      font-size: 1rem;
+      border: 2px solid var(--border-color);
+      border-radius: 8px;
+      margin-bottom: 1rem;
+      background: white;
+    }
+
+    .controls-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 1rem;
+      margin-bottom: 1.5rem;
+    }
+
+    .control-card {
+      background: var(--card-bg);
+      border-radius: 12px;
+      padding: 1.5rem;
+      border: 1px solid var(--border-color);
+    }
+
+    .control-card h3 {
+      font-size: 0.9rem;
+      color: var(--text-light);
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      margin-bottom: 1rem;
+    }
+
+    .auto-capture-row {
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+      margin-bottom: 1rem;
+    }
+
+    .toggle-switch {
+      position: relative;
+      width: 50px;
+      height: 26px;
+    }
+
+    .toggle-switch input {
+      opacity: 0;
+      width: 0;
+      height: 0;
+    }
+
+    .toggle-slider {
+      position: absolute;
+      cursor: pointer;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background-color: var(--border-color);
+      transition: 0.3s;
+      border-radius: 26px;
+    }
+
+    .toggle-slider:before {
+      position: absolute;
+      content: "";
+      height: 20px;
+      width: 20px;
+      left: 3px;
+      bottom: 3px;
+      background-color: white;
+      transition: 0.3s;
+      border-radius: 50%;
+    }
+
+    .toggle-switch input:checked + .toggle-slider {
+      background-color: var(--success-color);
+    }
+
+    .toggle-switch input:checked + .toggle-slider:before {
+      transform: translateX(24px);
+    }
+
+    .interval-input {
+      width: 80px;
+      padding: 0.5rem;
+      border: 2px solid var(--border-color);
+      border-radius: 6px;
+      text-align: center;
+    }
+
+    .status-card {
+      background: var(--card-bg);
+      border-radius: 12px;
+      padding: 1.5rem;
+      border: 1px solid var(--border-color);
+      margin-bottom: 1.5rem;
+    }
+
+    .status-row {
+      display: flex;
+      justify-content: space-between;
+      padding: 0.5rem 0;
+      border-bottom: 1px solid var(--border-color);
+    }
+
+    .status-row:last-child {
+      border-bottom: none;
+    }
+
+    .status-label {
+      color: var(--text-light);
+    }
+
+    .status-value {
+      font-weight: 500;
+    }
+
+    .status-value.success {
+      color: var(--success-color);
+    }
+
+    .status-value.warning {
+      color: var(--warning-color);
+    }
+
+    .status-value.error {
+      color: var(--danger-color);
+    }
+
+    .btn-danger {
+      background: var(--danger-color);
+    }
+
+    .btn-danger:hover {
+      box-shadow: 0 4px 12px rgba(239, 68, 68, 0.3);
+    }
+
+    .btn-success {
+      background: var(--success-color);
+    }
+
+    .btn-success:hover {
+      box-shadow: 0 4px 12px rgba(16, 185, 129, 0.3);
+    }
+
+    .btn:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+      transform: none !important;
+    }
+
+    .current-snapshot {
+      margin-top: 2rem;
+    }
+
+    .current-snapshot img {
+      max-width: 100%;
+      border-radius: 12px;
+      border: 1px solid var(--border-color);
+    }
+
+    .no-camera-message {
+      text-align: center;
+      padding: 3rem;
+      color: var(--text-light);
+    }
+
+    @media (max-width: 768px) {
+      .controls-grid {
+        grid-template-columns: 1fr;
+      }
+    }
+  </style>
+</head>
+<body>
+  <nav class="navbar">
+    <div class="nav-brand">bp Tracker</div>
+    <ul class="nav-menu">
+      <li><a href="/">Home</a></li>
+      <li><a href="/feeding.html">Feeding Log</a></li>
+      <li><a href="/live.html">Live View</a></li>
+    </ul>
+  </nav>
+
+  <main class="container">
+    <section class="page-header">
+      <h1>Snapshot Capture</h1>
+      <p>Capture and upload snapshots of bp's tank</p>
+    </section>
+
+    <div class="capture-container">
+      <!-- Authentication -->
+      <section class="auth-section" id="authSection">
+        <div class="last-fed-card">
+          <h2>Enter Password</h2>
+          <p style="color: var(--text-light); margin-bottom: 1rem;">This page is password protected</p>
+          <input type="password" id="authPassword" class="password-input" placeholder="Enter password">
+          <br><br>
+          <button class="btn" id="authBtn">Unlock</button>
+        </div>
+      </section>
+
+      <!-- Capture Interface -->
+      <section class="capture-section" id="captureSection">
+        <!-- Camera Selection -->
+        <select class="camera-select" id="cameraSelect">
+          <option value="">Select a camera...</option>
+        </select>
+
+        <!-- Video Preview -->
+        <div class="video-container" id="videoContainer">
+          <video class="video-preview" id="videoPreview" autoplay playsinline muted></video>
+          <div class="video-overlay" id="videoOverlay">Preview</div>
+        </div>
+
+        <div class="no-camera-message" id="noCameraMessage" style="display: none;">
+          <p>No camera selected or camera access denied.</p>
+          <p>Please select a camera from the dropdown above.</p>
+        </div>
+
+        <!-- Controls -->
+        <div class="controls-grid">
+          <div class="control-card">
+            <h3>Manual Capture</h3>
+            <button class="btn btn-large btn-success" id="captureBtn" style="width: 100%;">
+              Capture Now
+            </button>
+          </div>
+
+          <div class="control-card">
+            <h3>Auto Capture</h3>
+            <div class="auto-capture-row">
+              <label class="toggle-switch">
+                <input type="checkbox" id="autoCapture">
+                <span class="toggle-slider"></span>
+              </label>
+              <span>Every</span>
+              <input type="number" class="interval-input" id="intervalInput" value="60" min="10" max="600">
+              <span>seconds</span>
+            </div>
+            <div id="nextCaptureInfo" style="color: var(--text-light); font-size: 0.9rem;"></div>
+          </div>
+        </div>
+
+        <!-- Status -->
+        <div class="status-card">
+          <div class="status-row">
+            <span class="status-label">Camera Status</span>
+            <span class="status-value" id="cameraStatus">Not connected</span>
+          </div>
+          <div class="status-row">
+            <span class="status-label">Last Capture</span>
+            <span class="status-value" id="lastCaptureTime">Never</span>
+          </div>
+          <div class="status-row">
+            <span class="status-label">Upload Status</span>
+            <span class="status-value" id="uploadStatus">-</span>
+          </div>
+          <div class="status-row">
+            <span class="status-label">Auto Capture</span>
+            <span class="status-value" id="autoCaptureStatus">Disabled</span>
+          </div>
+        </div>
+
+        <!-- Delete Control -->
+        <div class="control-card">
+          <h3>Manage Current Snapshot</h3>
+          <p style="color: var(--text-light); margin-bottom: 1rem;">
+            Delete the current snapshot if you accidentally captured something you don't want public.
+          </p>
+          <button class="btn btn-danger" id="deleteBtn">
+            Delete Current Snapshot
+          </button>
+        </div>
+
+        <!-- Current Snapshot Preview -->
+        <div class="current-snapshot" id="currentSnapshotSection">
+          <h3 style="margin-bottom: 1rem;">Current Public Snapshot</h3>
+          <img id="currentSnapshot" src="" alt="Current snapshot" style="display: none;">
+          <p id="noSnapshotMessage" style="color: var(--text-light);">No snapshot uploaded yet</p>
+        </div>
+      </section>
+    </div>
+  </main>
+
+  <footer>
+    <p>bp Tracker - Keeping Bippy happy and healthy</p>
+  </footer>
+
+  <script src="/js/snapshot-capture.js"></script>
+</body>
+</html>
