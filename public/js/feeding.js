@@ -141,6 +141,13 @@ async function recordFeeding() {
 async function undoLastFeeding() {
   if (!lastFeedingId) return;
 
+  // Check password
+  const password = prompt('Enter password to undo:');
+  if (password !== FEEDING_PASSWORD) {
+    alert('Incorrect password');
+    return;
+  }
+
   const undoBtn = document.getElementById('undoBtn');
   undoBtn.textContent = 'Undoing...';
   undoBtn.disabled = true;
@@ -188,6 +195,13 @@ async function undoLastFeeding() {
 // Clear all history
 async function clearHistory() {
   if (!confirm('Are you sure you want to clear all feeding history?')) {
+    return;
+  }
+
+  // Check password
+  const password = prompt('Enter password to clear history:');
+  if (password !== FEEDING_PASSWORD) {
+    alert('Incorrect password');
     return;
   }
 
