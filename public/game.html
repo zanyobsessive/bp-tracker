@@ -1,0 +1,630 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>bp Tracker - Flappy bp</title>
+  <link rel="stylesheet" href="/css/style.css?v=2">
+  <style>
+    .game-container {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 20px;
+      min-height: calc(100vh - 200px);
+    }
+
+    .game-header {
+      text-align: center;
+      margin-bottom: 20px;
+    }
+
+    .game-header h1 {
+      color: #2563eb;
+      margin-bottom: 10px;
+    }
+
+    .game-header p {
+      color: #666;
+      max-width: 600px;
+    }
+
+    .game-wrapper {
+      position: relative;
+      border: 4px solid #2563eb;
+      border-radius: 12px;
+      overflow: hidden;
+      box-shadow: 0 10px 40px rgba(37, 99, 235, 0.3);
+    }
+
+    #gameCanvas {
+      display: block;
+      background: linear-gradient(180deg, #87CEEB 0%, #98D8E8 50%, #B8E8F0 100%);
+    }
+
+    .game-overlay {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      background: rgba(0, 0, 0, 0.7);
+      color: white;
+      text-align: center;
+      padding: 20px;
+    }
+
+    .game-overlay.hidden {
+      display: none;
+    }
+
+    .game-overlay h2 {
+      font-size: 2.5rem;
+      margin-bottom: 15px;
+      color: #fff;
+    }
+
+    .game-overlay p {
+      font-size: 1.2rem;
+      margin-bottom: 20px;
+      color: #ccc;
+    }
+
+    .game-overlay .score-display {
+      font-size: 3rem;
+      color: #ffb000;
+      margin: 20px 0;
+    }
+
+    .game-overlay .high-score {
+      font-size: 1.2rem;
+      color: #10b981;
+      margin-bottom: 20px;
+    }
+
+    .play-btn {
+      background: linear-gradient(135deg, #2563eb, #0891b2);
+      color: white;
+      border: none;
+      padding: 15px 40px;
+      font-size: 1.3rem;
+      border-radius: 50px;
+      cursor: pointer;
+      transition: transform 0.2s, box-shadow 0.2s;
+      font-weight: bold;
+    }
+
+    .play-btn:hover {
+      transform: scale(1.05);
+      box-shadow: 0 5px 20px rgba(37, 99, 235, 0.5);
+    }
+
+    .game-stats {
+      display: flex;
+      gap: 40px;
+      margin-top: 20px;
+      padding: 15px 30px;
+      background: #f8fafc;
+      border-radius: 10px;
+      border: 2px solid #e2e8f0;
+    }
+
+    .stat {
+      text-align: center;
+    }
+
+    .stat-label {
+      font-size: 0.9rem;
+      color: #64748b;
+      text-transform: uppercase;
+    }
+
+    .stat-value {
+      font-size: 1.5rem;
+      font-weight: bold;
+      color: #2563eb;
+    }
+
+    .game-instructions {
+      margin-top: 20px;
+      padding: 15px 25px;
+      background: linear-gradient(135deg, #fef3c7, #fde68a);
+      border-radius: 10px;
+      border: 2px solid #f59e0b;
+      max-width: 400px;
+      text-align: center;
+    }
+
+    .game-instructions h3 {
+      color: #92400e;
+      margin-bottom: 10px;
+    }
+
+    .game-instructions p {
+      color: #78350f;
+      margin: 5px 0;
+    }
+
+    .divvy-memorial {
+      margin-top: 20px;
+      padding: 15px;
+      background: #1a1a1a;
+      border-radius: 10px;
+      border: 2px solid #444;
+      color: #888;
+      font-family: monospace;
+      text-align: center;
+    }
+
+    .divvy-memorial .rip {
+      color: #ef4444;
+      font-size: 1.2rem;
+    }
+
+    @media (max-width: 520px) {
+      #gameCanvas {
+        width: 100%;
+        height: auto;
+      }
+
+      .game-wrapper {
+        width: 100%;
+        max-width: 480px;
+      }
+
+      .game-stats {
+        gap: 20px;
+        padding: 10px 20px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <nav class="navbar">
+    <a href="/" class="nav-brand">bp Tracker</a>
+    <ul class="nav-menu">
+      <li><a href="/feeding.html">Feeding Log</a></li>
+      <li><a href="/live.html">Live View</a></li>
+      <li><a href="/scoreboard.html">Scoreboard</a></li>
+      <li><a href="/game.html" class="active">Flappy bp</a></li>
+    </ul>
+  </nav>
+
+  <main class="container">
+    <div class="game-container">
+      <div class="game-header">
+        <h1>Flappy bp</h1>
+        <p>Help bp navigate through the graveyard of fallen fish! Avoid the tombstones commemorating Divvy's untimely demise.</p>
+      </div>
+
+      <div class="game-wrapper">
+        <canvas id="gameCanvas" width="480" height="640"></canvas>
+
+        <div id="startScreen" class="game-overlay">
+          <h2>Flappy bp</h2>
+          <p>Help Bippy swim through the Divvy graveyard!</p>
+          <button class="play-btn" onclick="startGame()">Start Game</button>
+          <div class="game-instructions">
+            <h3>How to Play</h3>
+            <p>Click, tap, or press SPACE to swim up</p>
+            <p>Avoid the gravestones!</p>
+            <p>Each gravestone passed = 1 point</p>
+          </div>
+        </div>
+
+        <div id="gameOverScreen" class="game-overlay hidden">
+          <h2>Game Over!</h2>
+          <p>bp hit a Divvy gravestone...</p>
+          <div class="score-display">Score: <span id="finalScore">0</span></div>
+          <div class="high-score">High Score: <span id="highScore">0</span></div>
+          <button class="play-btn" onclick="startGame()">Play Again</button>
+        </div>
+      </div>
+
+      <div class="game-stats">
+        <div class="stat">
+          <div class="stat-label">Current Score</div>
+          <div class="stat-value" id="currentScore">0</div>
+        </div>
+        <div class="stat">
+          <div class="stat-label">High Score</div>
+          <div class="stat-value" id="displayHighScore">0</div>
+        </div>
+        <div class="stat">
+          <div class="stat-label">Games Played</div>
+          <div class="stat-value" id="gamesPlayed">0</div>
+        </div>
+      </div>
+
+      <div class="divvy-memorial">
+        <div class="rip">RIP Dividend Recap "Divvy"</div>
+        <div>September 5 - September 14, 2025</div>
+        <div>9 days of glory. Forever in our hearts.</div>
+      </div>
+    </div>
+  </main>
+
+  <footer>
+    <p>bp Tracker - Keeping Bippy happy and healthy</p>
+  </footer>
+
+  <script>
+    const canvas = document.getElementById('gameCanvas');
+    const ctx = canvas.getContext('2d');
+
+    // Game state
+    let gameRunning = false;
+    let score = 0;
+    let highScore = parseInt(localStorage.getItem('flappyBPHighScore')) || 0;
+    let gamesPlayed = parseInt(localStorage.getItem('flappyBPGamesPlayed')) || 0;
+
+    // Update display
+    document.getElementById('displayHighScore').textContent = highScore;
+    document.getElementById('gamesPlayed').textContent = gamesPlayed;
+
+    // Load BP image
+    const bpImage = new Image();
+    bpImage.src = '/images/bp_game.jpg';
+    let bpImageLoaded = false;
+    bpImage.onload = () => { bpImageLoaded = true; };
+
+    // BP (the fish)
+    const bp = {
+      x: 80,
+      y: canvas.height / 2,
+      width: 60,
+      height: 45,
+      velocity: 0,
+      gravity: 0.4,
+      jumpStrength: -8,
+      rotation: 0
+    };
+
+    // Gravestones (obstacles)
+    let gravestones = [];
+    const gravestoneWidth = 70;
+    const gravestoneGap = 180;
+    const gravestoneSpeed = 2.5;
+    let gravestoneTimer = 0;
+    const gravestoneInterval = 100;
+
+    // Bubbles for decoration
+    let bubbles = [];
+
+    // Ground
+    const groundHeight = 80;
+    let groundX = 0;
+
+    function resetGame() {
+      bp.y = canvas.height / 2;
+      bp.velocity = 0;
+      bp.rotation = 0;
+      gravestones = [];
+      bubbles = [];
+      score = 0;
+      gravestoneTimer = 0;
+      document.getElementById('currentScore').textContent = '0';
+    }
+
+    function startGame() {
+      resetGame();
+      gameRunning = true;
+      document.getElementById('startScreen').classList.add('hidden');
+      document.getElementById('gameOverScreen').classList.add('hidden');
+      gamesPlayed++;
+      localStorage.setItem('flappyBPGamesPlayed', gamesPlayed);
+      document.getElementById('gamesPlayed').textContent = gamesPlayed;
+      gameLoop();
+    }
+
+    function endGame() {
+      gameRunning = false;
+      if (score > highScore) {
+        highScore = score;
+        localStorage.setItem('flappyBPHighScore', highScore);
+        document.getElementById('displayHighScore').textContent = highScore;
+      }
+      document.getElementById('finalScore').textContent = score;
+      document.getElementById('highScore').textContent = highScore;
+      document.getElementById('gameOverScreen').classList.remove('hidden');
+    }
+
+    function jump() {
+      if (gameRunning) {
+        bp.velocity = bp.jumpStrength;
+      }
+    }
+
+    // Input handlers
+    document.addEventListener('keydown', (e) => {
+      if (e.code === 'Space') {
+        e.preventDefault();
+        jump();
+      }
+    });
+
+    canvas.addEventListener('click', jump);
+    canvas.addEventListener('touchstart', (e) => {
+      e.preventDefault();
+      jump();
+    });
+
+    function createGravestone() {
+      const minHeight = 80;
+      const maxHeight = canvas.height - groundHeight - gravestoneGap - minHeight;
+      const topHeight = Math.random() * (maxHeight - minHeight) + minHeight;
+
+      gravestones.push({
+        x: canvas.width,
+        topHeight: topHeight,
+        bottomY: topHeight + gravestoneGap,
+        passed: false
+      });
+    }
+
+    function createBubble() {
+      bubbles.push({
+        x: Math.random() * canvas.width,
+        y: canvas.height - groundHeight,
+        size: Math.random() * 8 + 3,
+        speed: Math.random() * 1 + 0.5,
+        wobble: Math.random() * Math.PI * 2
+      });
+    }
+
+    function drawBackground() {
+      // Sky gradient is handled by canvas background
+
+      // Draw some seaweed/plants at the bottom
+      ctx.fillStyle = '#228B22';
+      for (let i = 0; i < canvas.width; i += 40) {
+        const height = 30 + Math.sin(i * 0.1 + Date.now() * 0.001) * 10;
+        ctx.beginPath();
+        ctx.moveTo(i, canvas.height - groundHeight);
+        ctx.quadraticCurveTo(i + 10, canvas.height - groundHeight - height, i + 20, canvas.height - groundHeight);
+        ctx.fill();
+      }
+    }
+
+    function drawGround() {
+      // Sandy bottom
+      ctx.fillStyle = '#C2B280';
+      ctx.fillRect(0, canvas.height - groundHeight, canvas.width, groundHeight);
+
+      // Pebbles/details
+      ctx.fillStyle = '#A89F6C';
+      for (let i = 0; i < canvas.width; i += 30) {
+        ctx.beginPath();
+        ctx.ellipse(i + 15, canvas.height - groundHeight + 20, 10, 6, 0, 0, Math.PI * 2);
+        ctx.fill();
+      }
+
+      // Top edge
+      ctx.fillStyle = '#8B7355';
+      ctx.fillRect(0, canvas.height - groundHeight, canvas.width, 5);
+    }
+
+    function drawBP() {
+      ctx.save();
+      ctx.translate(bp.x + bp.width / 2, bp.y + bp.height / 2);
+
+      // Rotate based on velocity
+      bp.rotation = Math.min(Math.max(bp.velocity * 3, -30), 45);
+      ctx.rotate(bp.rotation * Math.PI / 180);
+
+      if (bpImageLoaded) {
+        // Draw the actual BP image
+        ctx.drawImage(bpImage, -bp.width / 2, -bp.height / 2, bp.width, bp.height);
+      } else {
+        // Fallback fish drawing
+        ctx.fillStyle = '#1E4D8C';
+        ctx.beginPath();
+        ctx.ellipse(0, 0, bp.width / 2, bp.height / 2, 0, 0, Math.PI * 2);
+        ctx.fill();
+
+        // Tail
+        ctx.beginPath();
+        ctx.moveTo(-bp.width / 2, 0);
+        ctx.lineTo(-bp.width / 2 - 15, -15);
+        ctx.lineTo(-bp.width / 2 - 15, 15);
+        ctx.closePath();
+        ctx.fill();
+
+        // Eye
+        ctx.fillStyle = 'white';
+        ctx.beginPath();
+        ctx.arc(bp.width / 4, -5, 6, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.fillStyle = 'black';
+        ctx.beginPath();
+        ctx.arc(bp.width / 4 + 2, -5, 3, 0, Math.PI * 2);
+        ctx.fill();
+      }
+
+      ctx.restore();
+    }
+
+    function drawGravestone(stone) {
+      // Top gravestone (hanging from top)
+      drawSingleGravestone(stone.x, 0, stone.topHeight, true);
+
+      // Bottom gravestone (standing on ground)
+      const bottomHeight = canvas.height - groundHeight - stone.bottomY;
+      drawSingleGravestone(stone.x, stone.bottomY, bottomHeight, false);
+    }
+
+    function drawSingleGravestone(x, y, height, isTop) {
+      ctx.fillStyle = '#4a4a4a';
+
+      if (isTop) {
+        // Top gravestone (inverted)
+        ctx.fillRect(x, y, gravestoneWidth, height - 20);
+
+        // Rounded bottom
+        ctx.beginPath();
+        ctx.arc(x + gravestoneWidth / 2, height - 20, gravestoneWidth / 2, 0, Math.PI);
+        ctx.fill();
+
+        // Cross
+        ctx.fillStyle = '#666';
+        ctx.fillRect(x + gravestoneWidth / 2 - 3, height - 60, 6, 30);
+        ctx.fillRect(x + gravestoneWidth / 2 - 12, height - 50, 24, 6);
+      } else {
+        // Bottom gravestone
+        // Main body
+        ctx.beginPath();
+        ctx.moveTo(x, y + height);
+        ctx.lineTo(x, y + 20);
+        ctx.quadraticCurveTo(x, y, x + gravestoneWidth / 2, y);
+        ctx.quadraticCurveTo(x + gravestoneWidth, y, x + gravestoneWidth, y + 20);
+        ctx.lineTo(x + gravestoneWidth, y + height);
+        ctx.closePath();
+        ctx.fill();
+
+        // RIP text
+        ctx.fillStyle = '#888';
+        ctx.font = 'bold 12px serif';
+        ctx.textAlign = 'center';
+        ctx.fillText('RIP', x + gravestoneWidth / 2, y + 25);
+
+        // Divvy text
+        ctx.font = '10px serif';
+        ctx.fillText('DIVVY', x + gravestoneWidth / 2, y + 40);
+
+        // Date
+        ctx.font = '8px serif';
+        ctx.fillText('9 DAYS', x + gravestoneWidth / 2, y + 55);
+      }
+
+      // Stone texture
+      ctx.fillStyle = '#3a3a3a';
+      for (let i = 0; i < 5; i++) {
+        const px = x + Math.random() * (gravestoneWidth - 10) + 5;
+        const py = isTop ? y + Math.random() * (height - 30) + 10 : y + Math.random() * (height - 30) + 20;
+        ctx.beginPath();
+        ctx.arc(px, py, 2, 0, Math.PI * 2);
+        ctx.fill();
+      }
+    }
+
+    function drawBubbles() {
+      ctx.fillStyle = 'rgba(255, 255, 255, 0.5)';
+      ctx.strokeStyle = 'rgba(255, 255, 255, 0.8)';
+
+      bubbles.forEach(bubble => {
+        ctx.beginPath();
+        ctx.arc(bubble.x + Math.sin(bubble.wobble) * 5, bubble.y, bubble.size, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.stroke();
+      });
+    }
+
+    function drawScore() {
+      ctx.fillStyle = 'white';
+      ctx.strokeStyle = '#2563eb';
+      ctx.lineWidth = 3;
+      ctx.font = 'bold 48px Arial';
+      ctx.textAlign = 'center';
+      ctx.strokeText(score, canvas.width / 2, 60);
+      ctx.fillText(score, canvas.width / 2, 60);
+    }
+
+    function update() {
+      // Update BP
+      bp.velocity += bp.gravity;
+      bp.y += bp.velocity;
+
+      // Create new gravestones
+      gravestoneTimer++;
+      if (gravestoneTimer >= gravestoneInterval) {
+        createGravestone();
+        gravestoneTimer = 0;
+      }
+
+      // Create bubbles occasionally
+      if (Math.random() < 0.02) {
+        createBubble();
+      }
+
+      // Update gravestones
+      gravestones.forEach(stone => {
+        stone.x -= gravestoneSpeed;
+
+        // Check if passed
+        if (!stone.passed && stone.x + gravestoneWidth < bp.x) {
+          stone.passed = true;
+          score++;
+          document.getElementById('currentScore').textContent = score;
+        }
+      });
+
+      // Remove off-screen gravestones
+      gravestones = gravestones.filter(stone => stone.x + gravestoneWidth > 0);
+
+      // Update bubbles
+      bubbles.forEach(bubble => {
+        bubble.y -= bubble.speed;
+        bubble.wobble += 0.05;
+      });
+      bubbles = bubbles.filter(bubble => bubble.y + bubble.size > 0);
+
+      // Check collisions
+      // Ground/ceiling
+      if (bp.y + bp.height > canvas.height - groundHeight || bp.y < 0) {
+        endGame();
+        return;
+      }
+
+      // Gravestones
+      gravestones.forEach(stone => {
+        // Check collision with top gravestone
+        if (bp.x + bp.width > stone.x && bp.x < stone.x + gravestoneWidth) {
+          if (bp.y < stone.topHeight || bp.y + bp.height > stone.bottomY) {
+            endGame();
+            return;
+          }
+        }
+      });
+    }
+
+    function draw() {
+      // Clear canvas
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+      // Draw background
+      drawBackground();
+
+      // Draw bubbles
+      drawBubbles();
+
+      // Draw gravestones
+      gravestones.forEach(stone => drawGravestone(stone));
+
+      // Draw BP
+      drawBP();
+
+      // Draw ground
+      drawGround();
+
+      // Draw score
+      drawScore();
+    }
+
+    function gameLoop() {
+      if (!gameRunning) return;
+
+      update();
+      draw();
+
+      requestAnimationFrame(gameLoop);
+    }
+
+    // Initial draw
+    draw();
+  </script>
+</body>
+</html>
