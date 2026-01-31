@@ -4,8 +4,6 @@
 // API endpoint - UPDATE THIS after deploying your API Gateway
 const API_BASE_URL = 'https://mkou7ep3mh.execute-api.us-east-1.amazonaws.com/prod';
 
-const FEEDING_PASSWORD = 'business school';
-
 // Local cache of feeding history
 let feedingHistory = [];
 
@@ -55,11 +53,9 @@ async function recordFeeding() {
   const passwordInput = document.getElementById('passwordInput');
   const password = passwordInput.value;
 
-  // Check password
-  if (password !== FEEDING_PASSWORD) {
+  if (!password) {
     passwordInput.classList.add('error');
-    passwordInput.value = '';
-    passwordInput.placeholder = 'Incorrect password';
+    passwordInput.placeholder = 'Password required';
     setTimeout(() => {
       passwordInput.classList.remove('error');
       passwordInput.placeholder = 'Enter password';
@@ -81,9 +77,26 @@ async function recordFeeding() {
   try {
     const response = await fetch(`${API_BASE_URL}/feeding`, {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${password}`
+      },
       body: JSON.stringify(feeding)
     });
+
+    if (response.status === 401) {
+      // Wrong password - server rejected it
+      passwordInput.classList.add('error');
+      passwordInput.value = '';
+      passwordInput.placeholder = 'Incorrect password';
+      setTimeout(() => {
+        passwordInput.classList.remove('error');
+        passwordInput.placeholder = 'Enter password';
+      }, 2000);
+      btn.textContent = '🐟 I Just Fed bp!';
+      btn.disabled = false;
+      return;
+    }
 
     if (!response.ok) {
       throw new Error('Failed to record feeding');
@@ -141,12 +154,9 @@ async function recordFeeding() {
 async function undoLastFeeding() {
   if (!lastFeedingId) return;
 
-  // Check password
+  // Prompt for password
   const password = prompt('Enter password to undo:');
-  if (password !== FEEDING_PASSWORD) {
-    alert('Incorrect password');
-    return;
-  }
+  if (!password) return;
 
   const undoBtn = document.getElementById('undoBtn');
   undoBtn.textContent = 'Undoing...';
@@ -154,8 +164,18 @@ async function undoLastFeeding() {
 
   try {
     const response = await fetch(`${API_BASE_URL}/feeding/${lastFeedingId}`, {
-      method: 'DELETE'
+      method: 'DELETE',
+      headers: {
+        'Authorization': `Bearer ${password}`
+      }
     });
+
+    if (response.status === 401) {
+      alert('Incorrect password');
+      undoBtn.textContent = 'Undo';
+      undoBtn.disabled = false;
+      return;
+    }
 
     if (!response.ok) {
       throw new Error('Failed to undo feeding');
@@ -198,12 +218,9 @@ async function clearHistory() {
     return;
   }
 
-  // Check password
+  // Prompt for password
   const password = prompt('Enter password to clear history:');
-  if (password !== FEEDING_PASSWORD) {
-    alert('Incorrect password');
-    return;
-  }
+  if (!password) return;
 
   const clearBtn = document.getElementById('clearHistoryBtn');
   clearBtn.textContent = 'Clearing...';
@@ -211,8 +228,18 @@ async function clearHistory() {
 
   try {
     const response = await fetch(`${API_BASE_URL}/feeding`, {
-      method: 'DELETE'
+      method: 'DELETE',
+      headers: {
+        'Authorization': `Bearer ${password}`
+      }
     });
+
+    if (response.status === 401) {
+      alert('Incorrect password');
+      clearBtn.textContent = 'Clear History';
+      clearBtn.disabled = false;
+      return;
+    }
 
     if (!response.ok) {
       throw new Error('Failed to clear history');

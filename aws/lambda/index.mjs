@@ -23,12 +23,50 @@ const SNAPSHOT_KEY = 'snapshots/current.jpg';
 const SNAPSHOT_META_KEY = 'snapshots/meta.json';
 const PARTITION_KEY = 'FEEDING_LOG'; // Single partition for all feeding records
 
+// Password for protected endpoints - stored in environment variable
+const AUTH_PASSWORD = process.env.AUTH_PASSWORD || 'zane is smart';
+
 const headers = {
   'Content-Type': 'application/json',
   'Access-Control-Allow-Origin': '*',
   'Access-Control-Allow-Methods': 'GET, POST, DELETE, OPTIONS',
-  'Access-Control-Allow-Headers': 'Content-Type',
+  'Access-Control-Allow-Headers': 'Content-Type, Authorization',
 };
+
+// Helper to check authentication
+function checkAuth(event) {
+  // Check Authorization header first
+  const authHeader = event.headers?.authorization || event.headers?.Authorization;
+  if (authHeader) {
+    // Support "Bearer <password>" or just "<password>"
+    const password = authHeader.startsWith('Bearer ') ? authHeader.slice(7) : authHeader;
+    if (password === AUTH_PASSWORD) {
+      return true;
+    }
+  }
+
+  // Check request body as fallback
+  if (event.body) {
+    try {
+      const body = JSON.parse(event.body);
+      if (body.password === AUTH_PASSWORD) {
+        return true;
+      }
+    } catch (e) {
+      // Invalid JSON, ignore
+    }
+  }
+
+  return false;
+}
+
+function unauthorizedResponse() {
+  return {
+    statusCode: 401,
+    headers,
+    body: JSON.stringify({ error: 'Unauthorized - invalid password' }),
+  };
+}
 
 export const handler = async (event) => {
   const method = event.httpMethod || event.requestContext?.http?.method;
@@ -47,45 +85,63 @@ export const handler = async (event) => {
       return { statusCode: 200, headers, body: '' };
     }
 
-    // GET /feeding - Get all feeding history
+    // GET /feeding - Get all feeding history (PUBLIC - no auth required)
     if (routeKey === 'GET /feeding' || (method === 'GET' && path === '/feeding')) {
       return await getFeedings();
     }
 
-    // POST /feeding - Add a new feeding
+    // POST /feeding - Add a new feeding (PROTECTED)
     if (routeKey === 'POST /feeding' || (method === 'POST' && path === '/feeding')) {
+      if (!checkAuth(event)) {
+        return unauthorizedResponse();
+      }
       const body = JSON.parse(event.body || '{}');
       return await addFeeding(body);
     }
 
-    // DELETE /feeding/{id} - Delete a specific feeding (undo)
+    // DELETE /feeding/{id} - Delete a specific feeding (PROTECTED)
     if (routeKey === 'DELETE /feeding/{id}' || (method === 'DELETE' && path.startsWith('/feeding/') && path !== '/feeding')) {
+      if (!checkAuth(event)) {
+        return unauthorizedResponse();
+      }
       const id = path.split('/').pop() || event.pathParameters?.id;
       return await deleteFeeding(id);
     }
 
-    // DELETE /feeding - Clear all history
+    // DELETE /feeding - Clear all history (PROTECTED)
     if (routeKey === 'DELETE /feeding' || (method === 'DELETE' && path === '/feeding')) {
+      if (!checkAuth(event)) {
+        return unauthorizedResponse();
+      }
       return await clearAllFeedings();
     }
 
-    // GET /snapshot/upload-url - Get presigned URL for uploading snapshot
+    // GET /snapshot/upload-url - Get presigned URL for uploading snapshot (PROTECTED)
     if (routeKey === 'GET /snapshot/upload-url' || (method === 'GET' && path === '/snapshot/upload-url')) {
+      if (!checkAuth(event)) {
+        return unauthorizedResponse();
+      }
       return await getSnapshotUploadUrl();
     }
 
-    // GET /snapshot/meta - Get snapshot metadata
+    // GET /snapshot/meta - Get snapshot metadata (PUBLIC - needed for live view)
     if (routeKey === 'GET /snapshot/meta' || (method === 'GET' && path === '/snapshot/meta')) {
       return await getSnapshotMeta();
     }
 
-    // DELETE /snapshot - Delete current snapshot
+    // DELETE /snapshot - Delete current snapshot (PROTECTED)
     if (routeKey === 'DELETE /snapshot' || (method === 'DELETE' && path === '/snapshot')) {
+      if (!checkAuth(event)) {
+        return unauthorizedResponse();
+      }
       return await deleteSnapshot();
     }
 
-    // POST /snapshot/meta - Update snapshot metadata (timestamp)
+    // POST /snapshot/meta - Update snapshot metadata (PROTECTED)
     if (routeKey === 'POST /snapshot/meta' || (method === 'POST' && path === '/snapshot/meta')) {
+      if (!checkAuth(event)) {
+        return unauthorizedResponse();
+      }
       const body = JSON.parse(event.body || '{}');
       return await updateSnapshotMeta(body);
     }

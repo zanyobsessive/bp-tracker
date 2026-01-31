@@ -1,8 +1,8 @@
 // Snapshot Capture JavaScript
 const API_BASE_URL = 'https://mkou7ep3mh.execute-api.us-east-1.amazonaws.com/prod';
-const SNAPSHOT_PASSWORD = 'business school';
 
 let currentStream = null;
+let authToken = null; // Store the password for API calls
 let autoCaptureInterval = null;
 let nextCaptureTime = null;
 
@@ -48,23 +48,69 @@ function setupEventListeners() {
 
 function checkExistingAuth() {
   // Check if already authenticated in this session
-  if (sessionStorage.getItem('snapshot_auth') === 'true') {
+  const storedToken = sessionStorage.getItem('snapshot_auth_token');
+  if (storedToken) {
+    authToken = storedToken;
     showCaptureInterface();
   }
 }
 
-function authenticate() {
-  if (authPassword.value === SNAPSHOT_PASSWORD) {
-    sessionStorage.setItem('snapshot_auth', 'true');
-    showCaptureInterface();
-  } else {
+async function authenticate() {
+  const password = authPassword.value;
+  if (!password) {
     authPassword.classList.add('error');
-    authPassword.value = '';
-    authPassword.placeholder = 'Incorrect password';
+    authPassword.placeholder = 'Password required';
     setTimeout(() => {
       authPassword.classList.remove('error');
       authPassword.placeholder = 'Enter password';
     }, 2000);
+    return;
+  }
+
+  authBtn.disabled = true;
+  authBtn.textContent = 'Verifying...';
+
+  try {
+    // Verify password against the server by attempting to get an upload URL
+    const response = await fetch(`${API_BASE_URL}/snapshot/upload-url`, {
+      headers: {
+        'Authorization': `Bearer ${password}`
+      }
+    });
+
+    if (response.status === 401) {
+      // Wrong password
+      authPassword.classList.add('error');
+      authPassword.value = '';
+      authPassword.placeholder = 'Incorrect password';
+      setTimeout(() => {
+        authPassword.classList.remove('error');
+        authPassword.placeholder = 'Enter password';
+      }, 2000);
+      authBtn.disabled = false;
+      authBtn.textContent = 'Enter';
+      return;
+    }
+
+    if (response.ok) {
+      // Password is correct - store it for future API calls
+      authToken = password;
+      sessionStorage.setItem('snapshot_auth_token', password);
+      showCaptureInterface();
+    } else {
+      throw new Error('Server error');
+    }
+  } catch (error) {
+    console.error('Auth error:', error);
+    authPassword.classList.add('error');
+    authPassword.value = '';
+    authPassword.placeholder = 'Connection error';
+    setTimeout(() => {
+      authPassword.classList.remove('error');
+      authPassword.placeholder = 'Enter password';
+    }, 2000);
+    authBtn.disabled = false;
+    authBtn.textContent = 'Enter';
   }
 }
 
@@ -186,7 +232,18 @@ async function captureSnapshot() {
 
     // Get presigned URL
     uploadStatus.textContent = 'Getting upload URL...';
-    const urlResponse = await fetch(`${API_BASE_URL}/snapshot/upload-url`);
+    const urlResponse = await fetch(`${API_BASE_URL}/snapshot/upload-url`, {
+      headers: {
+        'Authorization': `Bearer ${authToken}`
+      }
+    });
+    if (urlResponse.status === 401) {
+      // Session expired, need to re-authenticate
+      sessionStorage.removeItem('snapshot_auth_token');
+      authToken = null;
+      location.reload();
+      return;
+    }
     if (!urlResponse.ok) throw new Error('Failed to get upload URL');
 
     const { uploadUrl } = await urlResponse.json();
@@ -303,7 +360,18 @@ async function deleteSnapshot() {
   try {
     const response = await fetch(`${API_BASE_URL}/snapshot`, {
       method: 'DELETE',
+      headers: {
+        'Authorization': `Bearer ${authToken}`
+      }
     });
+
+    if (response.status === 401) {
+      alert('Session expired. Please refresh and re-authenticate.');
+      sessionStorage.removeItem('snapshot_auth_token');
+      authToken = null;
+      location.reload();
+      return;
+    }
 
     if (!response.ok) throw new Error('Delete failed');
 
