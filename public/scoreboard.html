@@ -201,6 +201,25 @@
       margin-top: 0.25rem;
     }
 
+    /* Competitor Panel */
+    .competitor-panel {
+      border-color: var(--terminal-amber);
+    }
+
+    .competitor-panel .panel-header {
+      color: var(--terminal-amber);
+    }
+
+    .competitor-details {
+      list-style: none;
+      padding: 0;
+      margin: 0;
+    }
+
+    .competitor-details li {
+      margin-bottom: 0.25rem;
+    }
+
     /* Memorial Panel */
     .memorial-panel {
       border-color: var(--terminal-red);
@@ -335,6 +354,7 @@
       <li><a href="/feeding.html">FEEDING</a></li>
       <li><a href="/live.html">LIVE</a></li>
       <li><a href="/scoreboard.html" class="active">SCOREBOARD</a></li>
+      <li><a href="/game.html">GAME</a></li>
     </ul>
   </nav>
 
@@ -347,6 +367,7 @@
     <div class="ticker-bar">
       <div class="ticker-content" id="ticker">
         <span class="ticker-item"><span class="symbol">bp</span> <span class="up" id="tickerDays">+0 DAYS</span></span>
+        <span class="ticker-item"><span class="symbol">PROLE</span> <span class="down" id="tickerProle">NEW LISTING</span></span>
         <span class="ticker-item"><span class="symbol">DIVVY</span> <span class="down">DELISTED (9 DAYS)</span></span>
         <span class="ticker-item"><span class="symbol">LAIR</span> <span class="down">POSITION: UNDERWATER</span></span>
         <span class="ticker-item"><span class="symbol">VP</span> <span class="up">OUTLOOK: BULLISH</span></span>
@@ -383,6 +404,39 @@
         </div>
       </div>
 
+      <!-- Competitor Panel - Proletariat -->
+      <div class="terminal-panel competitor-panel">
+        <div class="panel-header">
+          <span>THE COMPETITION</span>
+          <span id="proleStatus">ACTIVE</span>
+        </div>
+        <div class="competitor-info">
+          <pre class="fish-graphic" style="color: var(--terminal-dim); font-size: 0.6rem; text-align: center;">
+       _.--""--._
+     .'          `.
+    /   O      O   \
+   |                |
+    \  \________/  /
+     `.          .'
+       `'------'`
+     [SHORT FINS]
+          </pre>
+          <h3 style="color: var(--terminal-amber); text-align: center; margin: 0.5rem 0;">PROLETARIAT</h3>
+          <div class="aka" style="text-align: center;">"Prole"</div>
+          <div style="text-align: center; margin-top: 0.5rem;">
+            <div class="stat-value" id="proleDays">0</div>
+            <div class="stat-label">DAYS ALIVE</div>
+          </div>
+          <ul class="competitor-details" style="font-size: 0.75rem; color: var(--terminal-dim); margin-top: 1rem;">
+            <li><span style="color: var(--terminal-amber);">OWNER:</span> The Lair</li>
+            <li><span style="color: var(--terminal-amber);">BREED:</span> Short-finned (inferior)</li>
+            <li><span style="color: var(--terminal-amber);">ACQUIRED:</span> <span id="proleAcquired">January 2026</span></li>
+            <li><span style="color: var(--terminal-amber);">APPEARANCE:</span> Far less regal than bp</li>
+            <li><span style="color: var(--terminal-amber);">OUTLOOK:</span> <span style="color: var(--terminal-red);">Bearish</span></li>
+          </ul>
+        </div>
+      </div>
+
       <!-- Memorial Panel -->
       <div class="terminal-panel memorial-panel">
         <div class="panel-header">
@@ -404,6 +458,7 @@
           <div class="dates">SEP 5 - SEP 14, 2025</div>
           <div class="dates" style="color: var(--terminal-red);">LIFESPAN: 9 DAYS</div>
           <div class="epitaph">"Gone but not forgotten.<br>A lesson in due diligence."</div>
+          <div style="margin-top: 0.5rem;"><a href="https://cooperlemone.com" target="_blank" style="color: var(--terminal-blue); font-size: 0.75rem;">View Memorial Site →</a></div>
         </div>
       </div>
 
@@ -417,11 +472,11 @@
           LOADING...
         </div>
         <ul class="bet-rules">
-          <li><span class="highlight">PARTICIPANTS:</span> VP (bp) vs The Lair (TBD)</li>
+          <li><span class="highlight">PARTICIPANTS:</span> VP (bp) vs The Lair (Proletariat)</li>
           <li><span class="highlight">START DATE:</span> January 26, 2026</li>
           <li><span class="highlight">LOSS CONDITION:</span> First fish to die loses</li>
           <li><span class="warning">LAIR ADVANTAGE:</span> If both survive to 2027, The Lair wins</li>
-          <li><span class="highlight">CURRENT LAIR STATUS:</span> <span id="lairStatus">Scrambling to acquire fish</span></li>
+          <li><span class="highlight">LAIR STATUS:</span> <span id="lairStatus" style="color: var(--terminal-green);">Fish acquired (Proletariat)</span></li>
         </ul>
       </div>
 
@@ -446,6 +501,7 @@
   <script>
     // Key dates
     const BP_BIRTHDAY = new Date('2026-01-17T12:00:00');
+    const PROLE_BIRTHDAY = new Date('2026-01-24T12:00:00'); // The Lair's new fish
     const BET_START = new Date('2026-01-26T00:00:00');
     const YEAR_END = new Date('2027-01-01T00:00:00');
     const DIVVY_LIFESPAN = 9; // days
@@ -500,6 +556,33 @@
 
       // Ticker
       document.getElementById('tickerDays').textContent = `+${daysDisplay} DAYS`;
+
+      // Update Prole stats
+      const proleMs = now - PROLE_BIRTHDAY;
+      const proleDays = Math.floor(proleMs / (1000 * 60 * 60 * 24));
+      const proleDaysEl = document.getElementById('proleDays');
+      const proleTickerEl = document.getElementById('tickerProle');
+
+      if (proleDays >= 0) {
+        proleDaysEl.textContent = proleDays;
+        proleTickerEl.textContent = `${proleDays} DAYS`;
+
+        // Update status based on comparison
+        const proleStatus = document.getElementById('proleStatus');
+        if (daysDisplay > proleDays) {
+          proleStatus.textContent = 'LOSING';
+          proleStatus.style.color = '#ff3333';
+        } else if (daysDisplay < proleDays) {
+          proleStatus.textContent = 'AHEAD';
+          proleStatus.style.color = '#00ff41';
+        } else {
+          proleStatus.textContent = 'TIED';
+          proleStatus.style.color = '#ffb000';
+        }
+      } else {
+        proleDaysEl.textContent = 'PENDING';
+        proleTickerEl.textContent = 'PENDING';
+      }
     }
 
     // Update countdown
@@ -519,7 +602,7 @@
         betStatus.style.color = '#ffb000';
         countdown.textContent = `T-${daysUntil}D ${hoursUntil}H`;
         countdown.classList.remove('active');
-        lairStatus.textContent = 'Scrambling to acquire fish';
+        lairStatus.textContent = 'Fish acquired (Proletariat)';
       } else {
         // Bet is active
         const msIntoBet = now - BET_START;
@@ -529,7 +612,7 @@
         betStatus.style.color = '#00ff41';
         countdown.textContent = `DAY ${daysIntoBet + 1} OF CONTEST`;
         countdown.classList.add('active');
-        lairStatus.textContent = 'Fish status unknown';
+        lairStatus.textContent = 'Proletariat in play';
       }
     }
 

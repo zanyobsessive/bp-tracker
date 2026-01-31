@@ -1,0 +1,356 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>In Memoriam: Dividend Recap (2025)</title>
+  <meta name="description" content="A memorial for Dividend Recap (Divvy), the Lair's fish that lived 9 days. September 5-14, 2025. Gone but not forgotten.">
+  <style>
+    :root {
+      --bg-dark: #0a0a0a;
+      --text-dim: #666666;
+      --text-red: #ff3333;
+      --text-amber: #ffb000;
+      --text-green: #00ff41;
+      --text-blue: #00bfff;
+      --border: #333333;
+    }
+
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      background: var(--bg-dark);
+      color: var(--text-dim);
+      font-family: 'Courier New', 'Monaco', 'Consolas', monospace;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 2rem 1rem;
+    }
+
+    .memorial-container {
+      max-width: 800px;
+      width: 100%;
+      text-align: center;
+    }
+
+    .header {
+      margin-bottom: 2rem;
+    }
+
+    .header h1 {
+      color: var(--text-red);
+      font-size: 2rem;
+      letter-spacing: 3px;
+      margin-bottom: 0.5rem;
+    }
+
+    .header .subtitle {
+      color: var(--text-amber);
+      font-size: 0.9rem;
+    }
+
+    .tombstone-ascii {
+      color: var(--text-dim);
+      font-size: 0.6rem;
+      line-height: 1.1;
+      margin: 2rem auto;
+      white-space: pre;
+    }
+
+    .fish-info {
+      border: 2px solid var(--text-red);
+      padding: 2rem;
+      margin: 2rem 0;
+      background: rgba(255, 51, 51, 0.05);
+    }
+
+    .fish-name {
+      color: var(--text-red);
+      font-size: 1.8rem;
+      margin-bottom: 0.5rem;
+    }
+
+    .fish-aka {
+      color: var(--text-amber);
+      font-style: italic;
+      margin-bottom: 1rem;
+    }
+
+    .dates {
+      color: var(--text-amber);
+      font-size: 1.2rem;
+      margin: 1rem 0;
+    }
+
+    .lifespan {
+      color: var(--text-red);
+      font-size: 2rem;
+      font-weight: bold;
+      margin: 1rem 0;
+    }
+
+    .lifespan-comparison {
+      color: var(--text-dim);
+      font-size: 0.85rem;
+      margin-top: 0.5rem;
+    }
+
+    .image-container {
+      margin: 2rem 0;
+      border: 1px solid var(--border);
+      padding: 1rem;
+      background: #111;
+    }
+
+    .image-container img {
+      max-width: 100%;
+      height: auto;
+      border: 1px solid var(--border);
+    }
+
+    .image-caption {
+      color: var(--text-dim);
+      font-size: 0.75rem;
+      margin-top: 0.5rem;
+      font-style: italic;
+    }
+
+    .epitaph {
+      color: var(--text-dim);
+      font-style: italic;
+      margin: 2rem 0;
+      padding: 1rem;
+      border-left: 3px solid var(--text-red);
+      text-align: left;
+    }
+
+    .stats-panel {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+      gap: 1rem;
+      margin: 2rem 0;
+    }
+
+    .stat {
+      background: #111;
+      border: 1px solid var(--border);
+      padding: 1rem;
+    }
+
+    .stat-value {
+      color: var(--text-red);
+      font-size: 1.5rem;
+    }
+
+    .stat-label {
+      color: var(--text-dim);
+      font-size: 0.7rem;
+      margin-top: 0.25rem;
+    }
+
+    .lessons-learned {
+      text-align: left;
+      margin: 2rem 0;
+      padding: 1rem;
+      background: #111;
+      border: 1px solid var(--border);
+    }
+
+    .lessons-learned h3 {
+      color: var(--text-amber);
+      margin-bottom: 1rem;
+      font-size: 0.9rem;
+    }
+
+    .lessons-learned ul {
+      list-style: none;
+      padding-left: 0;
+    }
+
+    .lessons-learned li {
+      margin-bottom: 0.5rem;
+      padding-left: 1.5rem;
+      position: relative;
+      font-size: 0.85rem;
+    }
+
+    .lessons-learned li::before {
+      content: ">";
+      position: absolute;
+      left: 0;
+      color: var(--text-red);
+    }
+
+    .taunt-banner {
+      background: var(--text-red);
+      color: var(--bg-dark);
+      padding: 1rem;
+      font-weight: bold;
+      margin: 2rem 0;
+      animation: pulse 2s infinite;
+    }
+
+    @keyframes pulse {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0.7; }
+    }
+
+    .footer {
+      margin-top: 3rem;
+      padding-top: 1rem;
+      border-top: 1px solid var(--border);
+      font-size: 0.75rem;
+    }
+
+    .footer a {
+      color: var(--text-blue);
+      text-decoration: none;
+    }
+
+    .footer a:hover {
+      text-decoration: underline;
+    }
+
+    .days-counter {
+      margin: 2rem 0;
+      padding: 1rem;
+      background: rgba(0, 255, 65, 0.1);
+      border: 1px solid var(--text-green);
+    }
+
+    .days-counter .label {
+      color: var(--text-dim);
+      font-size: 0.8rem;
+    }
+
+    .days-counter .count {
+      color: var(--text-green);
+      font-size: 2.5rem;
+      font-weight: bold;
+    }
+
+    .days-counter .sublabel {
+      color: var(--text-green);
+      font-size: 0.85rem;
+    }
+  </style>
+</head>
+<body>
+  <div class="memorial-container">
+    <header class="header">
+      <h1>IN MEMORIAM</h1>
+      <div class="subtitle">A TRIBUTE TO THE LAIR'S FALLEN WARRIOR</div>
+    </header>
+
+    <pre class="tombstone-ascii">
+                    ___
+                   /   \
+                  /     \
+                 /  RIP  \
+                |         |
+                |  DIVVY  |
+                |         |
+                | 9 DAYS  |
+               _|         |_
+              |_____________|
+             /               \
+            /                 \
+           /___________________\
+          /_____________________\
+         |_______________________|
+    </pre>
+
+    <div class="fish-info">
+      <div class="fish-name">DIVIDEND RECAP</div>
+      <div class="fish-aka">"Divvy"</div>
+      <div class="dates">September 5 - September 14, 2025</div>
+      <div class="lifespan">9 DAYS</div>
+      <div class="lifespan-comparison">
+        That's approximately 0.0247 years, or 216 hours, or 12,960 minutes of survival.
+      </div>
+    </div>
+
+    <div class="image-container">
+      <img src="/images/dead_divvy.jpg" alt="Dividend Recap (Divvy) - The Lair's fish that survived 9 days">
+      <div class="image-caption">
+        Divvy's final resting place at the bottom of the tank. The Spongebob pineapple decoration watches over his remains. September 14, 2025.
+      </div>
+    </div>
+
+    <div class="days-counter">
+      <div class="label">MEANWHILE, BP HAS BEEN ALIVE FOR</div>
+      <div class="count" id="bpDays">0</div>
+      <div class="sublabel">DAYS AND COUNTING</div>
+    </div>
+
+    <div class="taunt-banner">
+      BP IS CURRENTLY <span id="multiplier">0</span>x DIVVY'S LIFESPAN
+    </div>
+
+    <div class="stats-panel">
+      <div class="stat">
+        <div class="stat-value">1</div>
+        <div class="stat-label">FISH KILLED</div>
+      </div>
+      <div class="stat">
+        <div class="stat-value">0%</div>
+        <div class="stat-label">SUCCESS RATE</div>
+      </div>
+      <div class="stat">
+        <div class="stat-value">2nd</div>
+        <div class="stat-label">ATTEMPT NOW</div>
+      </div>
+    </div>
+
+    <blockquote class="epitaph">
+      "In finance, we measure performance against benchmarks. Divvy set the benchmark at 9 days.
+      Some would call this a low bar. The analysts called it 'a learning experience.'
+      The fish had no comment, being deceased."
+      <br><br>
+      - Market Commentary, September 2025
+    </blockquote>
+
+    <div class="lessons-learned">
+      <h3>>> LESSONS LEARNED (APPARENTLY NOT)</h3>
+      <ul>
+        <li>Fish require consistent care and feeding schedules</li>
+        <li>The Spongebob pineapple decoration does not provide life support</li>
+        <li>Naming a fish after a financial term does not guarantee returns</li>
+        <li>9 days is not a long time for any living creature</li>
+        <li>The Lair has now acquired "Proletariat" - history may repeat</li>
+      </ul>
+    </div>
+
+    <footer class="footer">
+      <p>This memorial brought to you by the office of the VP</p>
+      <p>Track the ongoing competition at <a href="https://zanestiles.com/scoreboard.html">bp TRACKER</a></p>
+      <p style="margin-top: 1rem; color: var(--text-red);">cooperlemone.com - A domain purchased specifically for this purpose</p>
+    </footer>
+  </div>
+
+  <script>
+    const BP_BIRTHDAY = new Date('2026-01-17T12:00:00');
+    const DIVVY_LIFESPAN = 9;
+
+    function updateCounter() {
+      const now = new Date();
+      const msAlive = now - BP_BIRTHDAY;
+      const daysAlive = Math.floor(msAlive / (1000 * 60 * 60 * 24));
+
+      document.getElementById('bpDays').textContent = daysAlive;
+
+      const multiplier = (daysAlive / DIVVY_LIFESPAN).toFixed(1);
+      document.getElementById('multiplier').textContent = multiplier;
+    }
+
+    updateCounter();
+    setInterval(updateCounter, 60000); // Update every minute
+  </script>
+</body>
+</html>
